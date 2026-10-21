@@ -44,7 +44,15 @@
       "Bash(python -V)",
       "Bash(python --version)",
       "Bash(printf:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(git -C:*)",
+      "Bash(git remote:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git worktree:*)",
+      "Bash(pytest --version)",
+      "Bash(which:*)",
+      "Bash(tree:*)",
+      "Bash(file:*)"
     ],
     "deny": [
       "Read(./.env)",

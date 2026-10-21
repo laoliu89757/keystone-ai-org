@@ -156,7 +156,40 @@ create_heartbeat                  长任务自我推进；create_schedule 用于
 archive_workspace / archive_agent 收尾
 ```
 
-## 12 变更记录
+## 12 自治模式与预算（重要）
+
+CEO 会话以 **`--mode bypass`** 运行（不再逐条请求人工授权），但边界没有消失，只是换了位置：
+
+| 仍然生效的边界 | 说明 |
+| --- | --- |
+| `scripts/hooks/guard_bash.sh` | 拦推 main / force push / `--no-verify` / `DROP`·`TRUNCATE` / 直连库 / 生产部署 / 密钥外带（**与角色无关，全局生效**） |
+| `scripts/hooks/guard_paths.sh` | 受保护路径对**所有** Agent 生效（`.github/`、`.paseo/`、`.claude/`、`AGENTS.md`、`CODEOWNERS`、`evals/baseline/`、`.env*`）；带 `AGENT_ROLE` 时再叠加目录白名单 |
+| Paseo `paseoTools` | 执行层 18 项编排工具不可用（不能招人、不能提权、不能改定时任务） |
+| 人工审批点 | 生产发布 / 生产迁移 / 密钥 / 付费 / 数据外发 / 合规结论 / 门禁变更 —— 任何模式下都不能由 Agent 完成 |
+
+**已知缺口**：`create_agent` 没有传 `AGENT_ROLE` 的参数，所以 CEO 派出的子 Agent 拿不到目录白名单（全局受保护路径与 `guard_bash` 仍然生效）。因此子 Agent 必须：①在自己的 worktree 分支上作业；②由评审官看 diff；③合并前由人抽查越界。
+
+### 预算硬上限（超限必须停并升级，不许空转）
+
+| 项 | 上限 |
+| --- | --- |
+| 并发子 Agent | ≤ 5 |
+| 单任务返工 | ≤ 3 轮 |
+| 单任务时长 | ≤ 90 分钟（里程碑级 ≤ 4 小时） |
+| 评审否决 | ≤ 3 次 |
+| 同一错误重复 | ≤ 2 次 |
+
+### bypass 模式下的额外禁令
+
+即使不弹权限窗，以下行为仍视为违规：
+
+1. `git push`（目前无远端，推了也无意义）；合并 main；`git reset --hard`。
+2. 安装任何第三方包、联网下载（`pip install`、`npm install`、`curl`）。
+3. 改写或删除 hooks、`.claude/settings.json`、`.paseo/config.patch.json`、评测基线。
+4. 为了让检查通过而修改断言、跳过测试、降低阈值。
+5. 把密钥、学生信息写入代码、日志、提示词或报告。
+
+## 13 变更记录
 
 | 日期 | 版本 | 变更 | 批准 |
 | --- | --- | --- | --- |

@@ -51,7 +51,11 @@ case "${AGENT_ROLE:-}" in
   sre)      allow=".github/ infra/ scripts/" ;;
   writer)   allow="docs/ CHANGELOG.md" ;;
   rev|sec|editor|oncall|legal) allow="" ;;   # 只读岗位，任何写入都拦
-  *) exit 0 ;;                               # 未声明角色 = 不启用白名单（仅限人手动调试）
+  *) 
+    # 未声明角色：目录白名单不生效（Paseo create_agent 不传 AGENT_ROLE），
+    # 受保护路径仍在上方已拦；这里只留一条痕迹便于事后审计。
+    echo "[guard_paths] 警告：AGENT_ROLE 未设置，写入 ${rel} 时目录白名单不生效（受保护路径仍由钩子与 CODEOWNERS 拦）。" >&2
+    exit 0 ;;
 esac
 
 if [ -z "$allow" ]; then

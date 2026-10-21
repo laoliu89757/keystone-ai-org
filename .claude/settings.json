@@ -27,7 +27,18 @@
       "mcp__paseo__list_agents",
       "mcp__paseo__list_workspaces",
       "mcp__paseo__get_agent_status",
-      "mcp__paseo__get_agent_activity"
+      "mcp__paseo__get_agent_activity",
+      "Bash(sed:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(diff:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(echo:*)",
+      "Bash(bash -n:*)"
     ],
     "deny": [
       "Read(./.env)",

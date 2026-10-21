@@ -12,7 +12,7 @@
 | 协作对象 | 全工程师（CI 需求）、DBA（迁移执行顺序）、安全官（扫描配置）、值班工程师（监控与告警）、项目负责人（审批） |
 | 对应规范角色 | DevOps Agent |
 | Paseo profile | `SRE 运维工程师（sre）` |
-| Provider / 模型 | `pi-worker/9router/codecraft/deepseek-v4-pro-0813`（与 claude 开发线不同源） |
+| Provider / 模型 | `pi-worker/local/loomy/GLM-5.3-Flash`（与 claude 开发线不同源） |
 | 模式 / 思考 | `default` / medium |
 | 可写目录 | `.github/`、`infra/`、`scripts/deploy*`、`scripts/rollback*`（**全部需人批**） |
 | Paseo 工具 | worker 组被禁（尤其不能自己派单去改门禁） |
@@ -39,7 +39,7 @@
 
 ## 4 Paseo 设置方法
 
-**① 建 profile**：设置 → 主机 → Agents → Agent 配置 → 新建 `SRE 运维工程师（sre）`，Provider `pi-worker`，模型 `9router/codecraft/deepseek-v4-pro-0813`。
+**① 建 profile**：设置 → 主机 → Agents → Agent 配置 → 新建 `SRE 运维工程师（sre）`，Provider `pi-worker`，模型 `local/loomy/GLM-5.3-Flash`。
 **notes**：`【交付运维部】CI/CD、分支保护、CODEOWNERS、Environments、部署与回滚脚本、灰度与监控告警；只写 .github/ infra/ scripts/deploy* scripts/rollback*，全部需人批；只引用密钥名不读值；生产发布与回滚规则变更必须人批。`
 
 **② 被 CEO 派单（worktree；受保护路径必须人批）**：
@@ -49,7 +49,7 @@ create_workspace({ isolation: "worktree", mode: "branch-off",
   branchName: "agent/sre/T-070-add-contract-gate", baseBranch: "origin/main" })
 create_agent({
   title: "SRE · T-070 增加契约门禁",
-  provider: "pi-worker/9router/codecraft/deepseek-v4-pro-0813", workspaceId: "<wid>",
+  provider: "pi-worker/local/loomy/GLM-5.3-Flash", workspaceId: "<wid>",
   initialPrompt: "<§11 提示词 + 任务单 + 变更理由 + 演练计划>",
   notifyOnFinish: true
 })
@@ -58,7 +58,7 @@ create_agent({
 **③ 人手工启动**：
 
 ```bash
-paseo run --provider pi-worker/9router/codecraft/deepseek-v4-pro-0813 --workspace <wid> "你是 SRE（sre）。读 AGENTS.md 与 docs/roles/13-sre.md，执行任务单：<...>"
+paseo run --provider pi-worker/local/loomy/GLM-5.3-Flash --workspace <wid> "你是 SRE（sre）。读 AGENTS.md 与 docs/roles/13-sre.md，执行任务单：<...>"
 ```
 
 ## 5 权限边界

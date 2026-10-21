@@ -43,3 +43,7 @@ tmp/
 
 # ---- 模型/依赖缓存 ----
 .cache/
+
+# 本地临时文件
+.ceo-agent-id.txt
+.probe-ids.txt

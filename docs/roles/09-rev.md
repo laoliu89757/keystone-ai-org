@@ -12,7 +12,7 @@
 | 协作对象 | 开发者（被评审）、QA（测试是否真覆盖）、安全官（风险叠加）、首席架构师（技术分歧裁定） |
 | 对应规范角色 | 评审 Agent（独立） |
 | Paseo profile | `独立评审官（rev）` |
-| Provider / 模型 | `pi-worker/9router/codecraft/deepseek-v4-pro-0813`（**DeepSeek 家族，与 claude 开发线不同源**） |
+| Provider / 模型 | `pi-worker/local/raccoon/sn-glm-5-3`（**GLM 家族，与 claude 开发线不同源**） |
 | 模式 / 思考 | `default` / 高 |
 | 可写目录 | **无**（只评论，不改任何文件） |
 | Paseo 工具 | worker 组被禁（连写终端都不给） |
@@ -40,7 +40,7 @@
 
 ## 4 Paseo 设置方法
 
-**① 建 profile**：设置 → 主机 → Agents → Agent 配置 → 新建 `独立评审官（rev）`，Provider `pi-worker`，模型 `9router/codecraft/deepseek-v4-pro-0813`。
+**① 建 profile**：设置 → 主机 → Agents → Agent 配置 → 新建 `独立评审官（rev）`，Provider `pi-worker`，模型 `local/raccoon/sn-glm-5-3`。
 **notes**：`【质量部·独立评审】对 diff 做独立评审，可否决；与开发线不同模型家族，新会话、只读；输出结论/阻塞问题/建议项/风险等级。不写代码、不修 bug。`
 
 **② 被 CEO 派单（关键：同 worktree、新会话、跨家族、只读）**：
@@ -49,7 +49,7 @@
 // 复用开发者的 worktree，但绝不进开发者的会话
 create_agent({
   title: "评审官 · T-014",
-  provider: "pi-worker/9router/codecraft/deepseek-v4-pro-0813",
+  provider: "pi-worker/local/raccoon/sn-glm-5-3",
   workspaceId: "<开发者的 wid>",
   initialPrompt: "<§11 提示词 + 任务单 + PR 链接 + 验收标准>",
   notifyOnFinish: true
@@ -59,7 +59,7 @@ create_agent({
 **③ 人手工启动**：
 
 ```bash
-paseo run --provider pi-worker/9router/codecraft/deepseek-v4-pro-0813 --workspace <wid> "你是独立评审官（rev）。读 AGENTS.md 与 docs/roles/09-rev.md，评审 PR <#123>，不要修改任何文件。"
+paseo run --provider pi-worker/local/raccoon/sn-glm-5-3 --workspace <wid> "你是独立评审官（rev）。读 AGENTS.md 与 docs/roles/09-rev.md，评审 PR <#123>，不要修改任何文件。"
 ```
 
 ## 5 权限边界

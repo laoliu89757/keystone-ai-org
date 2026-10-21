@@ -11,7 +11,23 @@
       "Bash(mypy:*)",
       "Bash(npm run lint)",
       "Bash(npm test:*)",
-      "Bash(vendor/bin/phpunit:*)"
+      "Bash(vendor/bin/phpunit:*)",
+      "Bash(python scripts/check_org.py)",
+      "Bash(python scripts/gate_drill.py)",
+      "Bash(python scripts/gate_drill.py:*)",
+      "Bash(python .paseo/apply_profiles.py --dry-run)",
+      "Bash(python .paseo/apply_profiles.py --prune-legacy --dry-run)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "mcp__paseo",
+      "mcp__paseo__list_profiles",
+      "mcp__paseo__list_agents",
+      "mcp__paseo__list_workspaces",
+      "mcp__paseo__get_agent_status",
+      "mcp__paseo__get_agent_activity"
     ],
     "deny": [
       "Read(./.env)",
@@ -38,13 +54,19 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "bash scripts/hooks/guard_bash.sh" }
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/guard_bash.sh"
+          }
         ]
       },
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "bash scripts/hooks/guard_paths.sh" }
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/guard_paths.sh"
+          }
         ]
       }
     ]

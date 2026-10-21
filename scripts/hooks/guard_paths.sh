@@ -38,7 +38,7 @@ esac
 
 # ---------- 2) 角色白名单 ----------
 case "${AGENT_ROLE:-}" in
-  ceo)      allow="" ;;                      # CEO 不写业务文件
+  ceo)      allow="docs/board/" ;;              # CEO 只写任务看板与报告
   cos)      allow="docs/roles/ AGENTS.md .paseo/" ;;
   cpo)      allow="docs/requirements/" ;;
   cto)      allow="openapi.yaml schemas/ docs/adr/" ;;

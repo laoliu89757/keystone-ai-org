@@ -12,7 +12,7 @@
 | 协作对象 | 四类工程师（修复）、独立评审官（风险叠加）、SRE（扫描配置）、合规官（数据外发） |
 | 对应规范角色 | 安全 Agent |
 | Paseo profile | `安全官 CISO（sec）` |
-| Provider / 模型 | `pi-worker/local/raccoon/sn-glm-5-3`（**GLM 家族，与 claude / deepseek 都不同源**） |
+| Provider / 模型 | `pi-worker/9router/amd/DeepSeek-V4-Flash`（**DeepSeek 家族，与 claude 开发线不同源**） |
 | 模式 / 思考 | `default` / medium |
 | 可写目录 | **无**（只出报告） |
 | Paseo 工具 | worker 组被禁 |
@@ -39,7 +39,7 @@
 
 ## 4 Paseo 设置方法
 
-**① 建 profile**：设置 → 主机 → Agents → Agent 配置 → 新建 `安全官 CISO（sec）`，Provider `pi-worker`，模型 `local/raccoon/sn-glm-5-3`。
+**① 建 profile**：设置 → 主机 → Agents → Agent 配置 → 新建 `安全官 CISO（sec）`，Provider `pi-worker`，模型 `9router/amd/DeepSeek-V4-Flash`。
 **notes**：`【质量部·安全】依赖漏洞、密钥泄露、注入、越权、SSRF、文件上传、LLM 提示词注入与答案泄露；只出报告不改代码；高危或疑似密钥泄露立即升级人。`
 
 **② 被 CEO 派单（只读，沿用目标工作区，不新建 worktree）**：
@@ -47,7 +47,7 @@
 ```javascript
 create_agent({
   title: "安全官 · T-014 审计",
-  provider: "pi-worker/local/raccoon/sn-glm-5-3",
+  provider: "pi-worker/9router/amd/DeepSeek-V4-Flash",
   workspaceId: "<被审计分支的 wid>",
   initialPrompt: "<§11 提示词 + 审计范围（目录/PR）+ 已知风险点>",
   notifyOnFinish: true
@@ -57,7 +57,7 @@ create_agent({
 **③ 人手工启动**：
 
 ```bash
-paseo run --provider pi-worker/local/raccoon/sn-glm-5-3 --workspace <wid> "你是安全官（sec）。读 AGENTS.md 与 docs/roles/10-sec.md，审计 PR <#123>，不要修改任何文件。"
+paseo run --provider pi-worker/9router/amd/DeepSeek-V4-Flash --workspace <wid> "你是安全官（sec）。读 AGENTS.md 与 docs/roles/10-sec.md，审计 PR <#123>，不要修改任何文件。"
 ```
 
 ## 5 权限边界

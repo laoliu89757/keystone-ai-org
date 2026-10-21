@@ -140,7 +140,7 @@
         "name": "独立评审官（rev）",
         "icon": "search",
         "provider": "pi-worker",
-        "model": "9router/codecraft/deepseek-v4-pro-0813",
+        "model": "local/raccoon/sn-glm-5-3",
         "notes": "【质量部 · 独立评审】选我对 diff 做独立评审，可否决。适用场景：每个开发 PR 交付后、高风险改动、发布前最终把关。我与开发线不同模型家族（DeepSeek vs Claude），新会话、不看开发者自述、只读不写。输出固定四段：结论/阻塞问题/建议项/风险等级。我也可以对设计方案做对抗性评审。不找我：写代码、修 bug、改测试。"
       },
       {
@@ -148,7 +148,7 @@
         "name": "安全官 CISO（sec）",
         "icon": "shield",
         "provider": "pi-worker",
-        "model": "local/raccoon/sn-glm-5-3",
+        "model": "9router/amd/DeepSeek-V4-Flash",
         "notes": "【质量部 · 安全】选我做安全审计：依赖漏洞、密钥泄露、注入、越权、SSRF、不安全反序列化、LLM 提示词注入与答案泄露。适用场景：改依赖、改鉴权、改支付、新增对外接口、每日依赖扫描、发布前安全检查。我只出报告不改代码。发现高危或疑似密钥泄露立即升级人。"
       },
       {
@@ -172,7 +172,7 @@
         "name": "SRE 运维工程师（sre）",
         "icon": "server",
         "provider": "pi-worker",
-        "model": "9router/codecraft/deepseek-v4-pro-0813",
+        "model": "local/loomy/GLM-5.3-Flash",
         "notes": "【交付运维部 · 交付】选我维护 CI/CD、环境、灰度与监控告警。适用场景：GitHub Actions、分支保护配置、CODEOWNERS、部署与回滚脚本、environment 配置、灰度指标口径、监控告警规则。我只写 .github/、infra/、scripts/deploy*、scripts/rollback*，全部需人批。我只引用密钥名不读密钥值。生产发布与回滚规则变更必须人批。"
       },
       {

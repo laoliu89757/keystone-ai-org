@@ -1,0 +1,67 @@
+name: ci
+
+# 本仓库是「编制与流程仓库」，CI 只校验编制一致性、门禁脚本行为与仓库卫生。
+# 产品仓库接管后，按 docs/04 §2.4 另加 backend / learning-service / frontend / contract / migrations / e2e 等 job。
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  org-consistency:
+    name: org-consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # 五处一致：组织表 / 角色卡 / profile / 钩子白名单 / AGENTS.md
+      - run: python scripts/check_org.py
+      # 门禁演练（本地可验证子集）；有 FAIL 即阻断，PENDING 不算失败
+      - name: gate drill (local subset)
+        run: python scripts/gate_drill.py
+      - name: profile patch is valid json
+        run: python -c "import json;json.load(open('.paseo/config.patch.json',encoding='utf-8'));print('ok')"
+      - name: hooks syntax
+        run: |
+          bash -n scripts/hooks/guard_bash.sh
+          bash -n scripts/hooks/guard_paths.sh
+
+  pr-size:
+    name: pr-size
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: changed lines <= 600
+        run: |
+          changed=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{s+=$1+$2} END {print s+0}')
+          echo "changed lines: $changed"
+          if [ "$changed" -gt 600 ]; then
+            echo '::error::PR 超过 600 行，请拆分（AGENTS.md 第 4 节第 3 条）'
+            exit 1
+          fi
+
+  secrets:
+    name: secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

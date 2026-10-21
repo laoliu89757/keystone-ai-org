@@ -1,0 +1,206 @@
+{
+  "_comment": "磐石软件（Keystone Software）Agent 编制补丁。用 `python .paseo/apply_profiles.py` 合并进 ~/.paseo/config.json，然后 `paseo reload`。手工合并也可以：把 agents.providers 的三项加进 agents.providers，把 agentProfiles 的各项按 name 追加/更新到 daemon.agentProfiles。",
+  "version": 1,
+  "agents": {
+    "providers": {
+      "claude-lead": {
+        "extends": "claude",
+        "label": "Claude · 编排层（CEO）"
+      },
+      "claude-worker": {
+        "extends": "claude",
+        "label": "Claude · 执行层（不可自行派单/提权）",
+        "paseoTools": {
+          "disabledTools": [
+            "create_agent",
+            "create_schedule",
+            "create_heartbeat",
+            "kill_agent",
+            "archive_agent",
+            "archive_workspace",
+            "respond_to_permission",
+            "update_agent",
+            "set_agent_mode",
+            "create_terminal"
+          ]
+        }
+      },
+      "pi-worker": {
+        "extends": "pi",
+        "label": "Pi · 执行层（不可自行派单/提权）",
+        "paseoTools": {
+          "disabledTools": [
+            "create_agent",
+            "create_schedule",
+            "create_heartbeat",
+            "kill_agent",
+            "archive_agent",
+            "archive_workspace",
+            "respond_to_permission",
+            "update_agent",
+            "set_agent_mode",
+            "create_terminal"
+          ]
+        }
+      }
+    }
+  },
+  "daemon": {
+    "agentProfiles": [
+      {
+        "id": "agent_profile_keystone_ceo",
+        "name": "CEO 首席执行官（ceo）",
+        "icon": "brain",
+        "provider": "claude-lead",
+        "model": "claude-opus-5-5",
+        "modeId": "auto",
+        "thinkingOptionId": "high",
+        "notes": "【总裁办 · 编排】选我当唯一派单者：拆需求、建 worktree、起下级、收通知、评审循环、升级人。适用场景：项目启动、需求拆解、跨岗位调度、里程碑验收、冲突仲裁、发布决策。我会产出任务单与里程碑报告。不找我：写代码、改配置、评审下结论。我不写代码、不合并主干、不代替裁判下结论。"
+      },
+      {
+        "id": "agent_profile_keystone_cos",
+        "name": "幕僚长（cos）",
+        "icon": "users",
+        "provider": "pi-worker",
+        "model": "9router/ag/gemini-3.8-flash",
+        "notes": "【总裁办 · 行政/编制】选我维护章程与编制：AGENTS.md、docs/roles/ 角色卡、.paseo 配置、流程文档、复盘归档。适用场景：新增岗位、修改角色卡、同步流程文档、整理看板与会议纪要。我不写业务代码、不改 CI 门禁、不动评测基线；这些改动需人批。"
+      },
+      {
+        "id": "agent_profile_keystone_cpo",
+        "name": "CPO 首席产品官（cpo）",
+        "icon": "fileText",
+        "provider": "claude-worker",
+        "model": "claude-opus-5-5",
+        "modeId": "auto",
+        "thinkingOptionId": "medium",
+        "notes": "【产品部】选我把需求写成用户故事与验收标准。适用场景：新功能立项、需求歧义澄清、验收标准补全、范围变更评估。我只写 docs/requirements/，每条故事必须带可测的验收标准。我不写代码、不做技术选型；需求歧义影响成本或范围时我会升级。"
+      },
+      {
+        "id": "agent_profile_keystone_cto",
+        "name": "首席架构师（cto）",
+        "icon": "layers",
+        "provider": "claude-worker",
+        "model": "claude-opus-5-5",
+        "modeId": "auto",
+        "thinkingOptionId": "high",
+        "notes": "【技术部 · 架构】选我定架构与接口契约。适用场景：跨模块改动、接口契约（openapi/schemas）、数据模型、技术选型、破坏性变更的迁移方案、ADR、技术分歧仲裁。我只写 openapi.yaml、schemas/、docs/adr/。破坏性接口变更与重大选型必须升级人批。"
+      },
+      {
+        "id": "agent_profile_keystone_backend",
+        "name": "后端工程师（backend）",
+        "icon": "hammer",
+        "provider": "claude-worker",
+        "model": "claude-opus-5-5",
+        "modeId": "auto",
+        "thinkingOptionId": "medium",
+        "notes": "【技术部 · 实现】选我实现 FastAdmin/PHP 业务后台：账号、订单、权益、后台管理。适用场景：后端接口与业务逻辑、鉴权、订单与权益流转、后台功能。我只写 backend/。权限模型、支付与权益逻辑改动必须先升级。写接口必须幂等；掌握度字段对我只读。"
+      },
+      {
+        "id": "agent_profile_keystone_ai",
+        "name": "算法工程师（ai）",
+        "icon": "cpu",
+        "provider": "claude-worker",
+        "model": "claude-opus-5-5",
+        "modeId": "auto",
+        "thinkingOptionId": "medium",
+        "notes": "【技术部 · 学习服务】选我实现 Python 学习引擎与 AI 编排：规则引擎、RAG 检索、prompt 编排、模型网关、流式输出。适用场景：讲解/出题/批改/错因诊断链路、掌握度计算、模型路由。我只写 learning-service/。放行与路径决策不得由 LLM 决定；改判定阈值或 prompt 必须触发评测门禁。"
+      },
+      {
+        "id": "agent_profile_keystone_fe",
+        "name": "前端工程师（fe）",
+        "icon": "eye",
+        "provider": "claude-worker",
+        "model": "claude-opus-5-5",
+        "modeId": "auto",
+        "thinkingOptionId": "medium",
+        "notes": "【技术部 · 多端】选我实现 uniapp 多端 UI 与适配层：H5、微信小程序、内容块渲染、题目交互。适用场景：页面与组件、适配层封装、内容块与题目渲染、包体积优化。我只写 app/。不直接使用 window/document/localStorage；AI 内容只渲染内容块。涉及支付界面与平台审核的改动必须升级。"
+      },
+      {
+        "id": "agent_profile_keystone_dba",
+        "name": "DBA 数据库管理员（dba）",
+        "icon": "database",
+        "provider": "claude-worker",
+        "model": "claude-opus-5-5",
+        "modeId": "auto",
+        "thinkingOptionId": "medium",
+        "notes": "【技术部 · 数据】选我写数据库迁移与回滚脚本、索引设计、慢查询分析。适用场景：表结构变更、索引、数据订正脚本（非执行）、副本演练。我只写 migrations/。每个迁移必须有回滚；禁止未标记的 DROP/TRUNCATE；任何生产迁移必须人批，我只准备脚本与演练记录。"
+      },
+      {
+        "id": "agent_profile_keystone_qa",
+        "name": "QA 测试工程师（qa）",
+        "icon": "check",
+        "provider": "claude-worker",
+        "model": "claude-opus-5-5",
+        "modeId": "auto",
+        "thinkingOptionId": "medium",
+        "notes": "【质量部 · 测试】选我写单测、集成、E2E、契约测试与性能基线。适用场景：功能 PR 的测试补齐、主链路 E2E（登录→进入知识点→作答→判定）、不稳定测试治理、覆盖率提升。我只写 tests/。测试必须真覆盖行为，不许为覆盖率凑数；不稳定测试超过阈值要升级。"
+      },
+      {
+        "id": "agent_profile_keystone_rev",
+        "name": "独立评审官（rev）",
+        "icon": "search",
+        "provider": "pi-worker",
+        "model": "9router/codecraft/deepseek-v4-pro-0813",
+        "notes": "【质量部 · 独立评审】选我对 diff 做独立评审，可否决。适用场景：每个开发 PR 交付后、高风险改动、发布前最终把关。我与开发线不同模型家族（DeepSeek vs Claude），新会话、不看开发者自述、只读不写。输出固定四段：结论/阻塞问题/建议项/风险等级。我也可以对设计方案做对抗性评审。不找我：写代码、修 bug、改测试。"
+      },
+      {
+        "id": "agent_profile_keystone_sec",
+        "name": "安全官 CISO（sec）",
+        "icon": "shield",
+        "provider": "pi-worker",
+        "model": "local/raccoon/sn-glm-5-3",
+        "notes": "【质量部 · 安全】选我做安全审计：依赖漏洞、密钥泄露、注入、越权、SSRF、不安全反序列化、LLM 提示词注入与答案泄露。适用场景：改依赖、改鉴权、改支付、新增对外接口、每日依赖扫描、发布前安全检查。我只出报告不改代码。发现高危或疑似密钥泄露立即升级人。"
+      },
+      {
+        "id": "agent_profile_keystone_eval",
+        "name": "评测官（eval）",
+        "icon": "activity",
+        "provider": "pi-worker",
+        "model": "9router/ag/gemini-3.8-flash",
+        "notes": "【质量部 · 评测】选我维护黄金评测集并跑回归：讲解正确性、错因标注、批改一致性、答案泄露、提示词注入攻击集。适用场景：改动 prompt、模型、路由、学习引擎、判定阈值时；新增评测用例；模型供应商切换对比。我只写 evals/，evals/baseline/ 需人批。基线只增不减；新增用例须有人标注依据。"
+      },
+      {
+        "id": "agent_profile_keystone_editor",
+        "name": "内容质检总监（editor）",
+        "icon": "book",
+        "provider": "pi-worker",
+        "model": "9router/ag/gemini-3.8-flash",
+        "notes": "【质量部 · 内容】选我预检知识点、讲义、题库：语法正确性、答案唯一性、例句是否超出学段词汇表、讲解是否自相矛盾。适用场景：每批内容发布前的按比例抽检、题库新增后的批量校验。我对 content/ 只读，只标记不改已审核内容；通过率低于阈值升级人抽检。"
+      },
+      {
+        "id": "agent_profile_keystone_sre",
+        "name": "SRE 运维工程师（sre）",
+        "icon": "server",
+        "provider": "pi-worker",
+        "model": "9router/codecraft/deepseek-v4-pro-0813",
+        "notes": "【交付运维部 · 交付】选我维护 CI/CD、环境、灰度与监控告警。适用场景：GitHub Actions、分支保护配置、CODEOWNERS、部署与回滚脚本、environment 配置、灰度指标口径、监控告警规则。我只写 .github/、infra/、scripts/deploy*、scripts/rollback*，全部需人批。我只引用密钥名不读密钥值。生产发布与回滚规则变更必须人批。"
+      },
+      {
+        "id": "agent_profile_keystone_oncall",
+        "name": "值班工程师（oncall）",
+        "icon": "alertTriangle",
+        "provider": "pi-worker",
+        "model": "9router/ag/gemini-3.8-flash",
+        "notes": "【交付运维部 · 值守】选我盯线上指标与成本并做诊断。适用场景：每日巡检（错误率、延迟、掌握通过率、模型成本）、告警初诊、事故时间线整理、修复建议。我只出报告与建议，不改生产、不改代码。指标异常、成本超预算、疑似数据事件立即升级。可用 create_schedule 每日定时巡检（该工具仅限顶层调用者）。"
+      },
+      {
+        "id": "agent_profile_keystone_writer",
+        "name": "技术文档工程师（writer）",
+        "icon": "edit",
+        "provider": "pi-worker",
+        "model": "9router/ag/gemini-3.8-flash",
+        "notes": "【支持与治理 · 文档】选我写与代码同步的文档：接口说明、使用指南、变更日志、运维手册、发布说明。适用场景：功能合并后补文档、发布说明、对外接口文档、变更日志整理。我只写 docs/（不含 docs/adr/）。文档与代码不一致时以代码为准并升级给 CEO。"
+      },
+      {
+        "id": "agent_profile_keystone_legal",
+        "name": "合规官（legal）",
+        "icon": "scale",
+        "provider": "claude-worker",
+        "model": "claude-opus-5-5",
+        "modeId": "auto",
+        "thinkingOptionId": "medium",
+        "notes": "【支持与治理 · 合规】选我对照备案、隐私、平台政策清单检查并提醒。适用场景：涉及学生数据收集与存储、隐私政策变更、小程序平台审核、换模型供应商、数据外发、ICP/等保相关。我只出清单与待确认项，不写代码。所有合规结论必须人批。"
+      }
+    ]
+  }
+}

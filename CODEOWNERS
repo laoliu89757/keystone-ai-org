@@ -1,0 +1,37 @@
+# CODEOWNERS · 磐石软件（Keystone Software）
+
+> 规则：受保护路径的 PR 必须由项目负责人批准；Agent 不能自批。
+> 落地到产品仓库时，把路径改成本项目真实目录。
+
+# 编制与流程本身：必须项目负责人批准
+/AGENTS.md                @project-owner
+/CLAUDE.md                @project-owner
+/CODEOWNERS               @project-owner
+/docs/roles/              @project-owner
+/docs/01-组织架构.md       @project-owner
+/docs/02-协作协议.md       @project-owner
+/docs/03-权限矩阵与强制手段.md @project-owner
+/.paseo/                  @project-owner
+/.claude/                 @project-owner
+/.pi/                     @project-owner
+
+# 流水线、门禁、基础设施
+/.github/                 @project-owner
+/infra/                   @project-owner
+/scripts/deploy*          @project-owner
+/scripts/rollback*        @project-owner
+/scripts/hooks/           @project-owner
+
+# 评测基线（门禁基准，评测官不能自批）
+/evals/baseline/          @project-owner
+
+# 架构决策记录
+/docs/adr/                @project-owner
+
+# ---- 以下为产品代码接入后的高风险目录（按实际路径调整） ----
+# 权限、支付、权益
+# /backend/application/admin/controller/auth/        @project-owner
+# /backend/application/api/controller/pay/           @project-owner
+# /backend/application/common/library/entitlement/   @project-owner
+# 掌握判定默认阈值与放行规则
+# /learning-service/engine/mastery_rules/            @project-owner

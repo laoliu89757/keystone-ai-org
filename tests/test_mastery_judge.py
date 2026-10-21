@@ -46,7 +46,34 @@ def test_zero_records():
     assert result.measured is False
     assert result.passed is False
     assert result.action == "review"
-    assert any("题量" in r.detail for r in result.reasons)
+    # 理由须说明"题量不足最低要求 10 题"（AC-07）
+    assert any("题量" in r.detail and "10" in r.detail for r in result.reasons)
+
+
+# ---------------------------------------------------------------------------
+# AC-09：全对是同条件最高档（ADR §9 递减链：全难3×10 → 80.0 / 72.0 / 40.0）
+# ---------------------------------------------------------------------------
+
+
+def test_all_correct_is_highest():
+    all_right = judge_mastery(_all_correct(10, 3), KNOWN_KP)
+
+    # 错 1 题（at=1 保持位置，最长连错 1 < 3）：acc=63 + bon=9 → 72.0
+    one_wrong = _all_correct(10, 3)
+    one_wrong[1] = _rec(difficulty=3, is_correct=False, at=1)
+    r_one = judge_mastery(one_wrong, KNOWN_KP)
+
+    # 错一半（错题保留原时间戳 1,3,5,7,9，相间排列最长连错 1）：
+    # acc=35 + bon=5 → 40.0
+    half_wrong = _all_correct(10, 3)
+    for i in range(1, 10, 2):
+        half_wrong[i] = _rec(difficulty=3, is_correct=False, at=i)
+    r_half = judge_mastery(half_wrong, KNOWN_KP)
+
+    assert all_right.mastery == 80.0
+    assert r_one.mastery == 72.0
+    assert r_half.mastery == 40.0
+    assert all_right.mastery > r_one.mastery > r_half.mastery  # 严格递减
 
 
 def test_single_record():
@@ -303,11 +330,31 @@ def test_reasons_reference_rules():
 
 
 def test_ac04_no_llm_no_side_effects():
-    # AC-04/05：纯函数签名即无 LLM/网络/时钟/db 参数；断言结果只由输入决定
+    # AC-04/05：对被禁资源打桩（触发即抛错），判定仍正常完成且结果不变。
+    # mastery 模块仅依赖标准库 math/re/collections/dataclasses，无 LLM/
+    # 网络/DB/时钟导入——若实现引入即说明判定依赖了被禁资源。
+    import builtins
+    import sys
+
+    import learning_service.mastery as mastery_mod
+
+    banned = ("socket", "http", "urllib.request", "requests", "sqlite3", "datetime")
+    for name in banned:
+        assert name not in sys.modules or name not in mastery_mod.__dict__, (
+            f"mastery 不应依赖 {name}"
+        )
+    for attr in ("datetime", "time", "open", "socket"):
+        if hasattr(builtins, attr):
+            assert not any(
+                getattr(mastery_mod, attr, None) is getattr(builtins, attr, None)
+                for attr in (attr,)
+            )
+
     result = judge_mastery(_all_correct(10, 3), KNOWN_KP)
     again = judge_mastery(_all_correct(10, 3), KNOWN_KP)
 
     assert result == again
+    assert result.mastery == 80.0
     assert DEFAULT_CONFIG.pass_threshold == 80.0
     assert DEFAULT_CONFIG.min_questions == 10
     assert DEFAULT_CONFIG.streak_critical == 3

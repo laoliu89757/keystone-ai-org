@@ -38,7 +38,13 @@
       "Bash(sort:*)",
       "Bash(uniq:*)",
       "Bash(echo:*)",
-      "Bash(bash -n:*)"
+      "Bash(bash -n:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python3 -m pytest:*)",
+      "Bash(python -V)",
+      "Bash(python --version)",
+      "Bash(printf:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [
       "Read(./.env)",

@@ -102,3 +102,5 @@ python scripts/gate_drill.py                # 本机已过 20 项；平台 10 �
 - 编制审计（五处一致性：组织表 / 角色卡 / profile / 钩子白名单 / CODEOWNERS）由幕僚长每月做一次，脚本：`python scripts/check_org.py`（退出码非 0 = 有差异）。
 - 任何门禁改动后重跑 `docs/04-落地清单与演练.md` 的 10 项演练。
 - 章程变更写入 `AGENTS.md` 第 12 节变更记录。
+
+<!-- rev check demo -->

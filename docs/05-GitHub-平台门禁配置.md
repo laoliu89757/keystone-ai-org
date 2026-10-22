@@ -35,6 +35,7 @@ python scripts/setup_github.py --apply
 | `pytest` | `ci.yml` | `learning-service/` 标准库门禁 + 全部测试 |
 | `pr-size` | `ci.yml` | 单 PR ≤600 行 |
 | `secrets` | `ci.yml` | gitleaks 密钥扫描（含历史） |
+| `agent-review` | `scripts/post_review_check.py`（rev 提交） | **独立评审结论；failure 即阻断合并** |
 
 > 产品仓库接管后追加：`backend`、`frontend`、`contract`、`migrations`、`e2e`、路径触发的 `eval-gate`（见 docs/04 §2.4）。
 
@@ -43,7 +44,7 @@ python scripts/setup_github.py --apply
 | 参数 | 值 | 为什么 |
 | --- | --- | --- |
 | Require a pull request | ✅ | 禁止直推 main |
-| Required approvals | **0（暂）** | 单人仓库若设 1 会**死锁**（GitHub 不允许批准自己的 PR）。机器账号（`keystone-rev`）建好后改 `--approvals 1 --require-code-owners` |
+| Required approvals | **0** | 单人仓库设 1 会**死锁**（GitHub 不允许批准自己的 PR）。改由 `agent-review` 状态检查承担“评审否决权”，已实测：block → `BLOCKED` 且合并被拒；pass → `CLEAN` |
 | Dismiss stale approvals | ✅ | 新提交后旧批准作废 |
 | Require review from Code Owners | ✅ | 受保护路径必须你批 |
 | Require status checks (strict) | ✅ | 必须绿 + 分支最新 |
@@ -81,20 +82,27 @@ python scripts/setup_github.py --apply
 
 启用三步：
 
-1. 建一个 **fine-grained PAT**（Settings → Developer settings → Personal access tokens → Fine-grained tokens）：
-   - Repository access：只选 `keystone-ai-org`
-   - Permissions：**Checks: Read and write** + **Contents: Read-only** + **Pull requests: Read-only**
-   - 有效期设短（30 天），过期重建
-2. 把该 token 作为环境变量 `GH_TOKEN` **只交给独立评审官**（Paseo 里给 rev 的会话注入；开发岗位一律不给）。
-3. 先让 rev 在一个通过态 PR 上跑一次，确认 `agent-review` 检查出现；**然后**才把它加进必需检查：
+1. 准备一个能写 commit status 的凭据（任一即可）：
+   - **已登录的 `gh` CLI**（本项目实测可用，最简单：`gh auth login` 后直接跑脚本）
+   - classic PAT（`repo` 范围）
+   - fine-grained PAT：Repository access 选本仓库，权限 **Commit statuses: Read and write** + Contents: Read-only
+2. 把该凭据**只交给独立评审官**（Paseo 里给 rev 的会话注入；开发岗位一律不给）。
+3. 先在一个通过态 PR 上跑一次，确认 `agent-review` 状态出现；**然后**才把它加进必需检查：
 
 ```powershell
+python scripts/post_review_check.py --pr <N> --conclusion pass --summary "冒烟：能写状态检查"
 python scripts/setup_github.py --apply --checks org-consistency,pytest,pr-size,secrets,agent-review
 ```
 
-> ⚠️ 顺序不能反：如果先加必需检查、却没有任何人提交这个检查，**所有 PR 都会被永久卡住**（状态永远 Expected）。
+> ⚠️ 顺序不能反：如果先加必需检查、却没有任何人提交这个状态，**所有 PR 都会被永久卡住**（状态永远 Expected）。
 >
-> ⚠️ 安全含义：**持有该 token 的 Agent 能伪造"评审通过"**。所以它只能给 rev，且 token 权限只到 checks —— 不给 contents:write，拿不到也推不了代码。
+> ⚠️ API 选择（实测）：GitHub 的 `check-runs` API **只接受 GitHub App 身份**，用户 token/PAT 一律返回
+> `You must authenticate via a GitHub App.`。所以本仓库走的是 **commit statuses API**
+> （`POST /repos/{repo}/statuses/{sha}`，`context=agent-review`），用户 token 即可写入，
+> 同样能被分支保护的必需检查识别。只有想用富文本报告面板时才需要建 GitHub App。
+>
+> ⚠️ 安全含义：**持有该凭据的 Agent 能伪造“评审通过”**（也能改判）。所以它只能给 rev，
+> 且权限最小化——不给 `contents:write`，拿不到也推不了代码。
 
 ### 仍然需要真人账号的那一项
 

@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import shutil
@@ -69,6 +70,51 @@ def load_cfg() -> dict:
 
 # ---------------------------------------------------------------- A 编制完整性
 def drill_setup(cfg: dict) -> None:
+    if not cfg:
+        for no, name in (
+            ("A1", "旧 profile 已清除"),
+            ("A2", "17 席编制齐备"),
+            ("A3", "CEO 变体保留全量工具"),
+            ("A4-claude-worker", "claude-worker 禁用危险工具"),
+            ("A4-pi-worker", "pi-worker 禁用危险工具"),
+            ("A5", "执行岗都跑在降权变体上"),
+        ):
+            add(no, name, "PENDING", "CI 环境无 ~/.paseo/config.json，只有本机能查（编制一致性由 A6 覆盖）")
+    else:
+        _drill_profiles(cfg)
+
+    # A8：产品红线——learning-service 只许标准库
+    p2 = subprocess.run([sys.executable, str(ROOT / "scripts" / "check_stdlib_only.py")],
+                        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    add("A8", "learning-service 仅标准库", "PASS" if p2.returncode == 0 else "FAIL",
+        (p2.stdout or "").strip().splitlines()[-1] if p2.stdout else "无输出")
+
+    # A9：产品测试全绿（CI 里 pytest 由独立 job 负责，这里没装就 PENDING）
+    tests_dir = ROOT / "tests"
+    has_pytest = importlib.util.find_spec("pytest") is not None
+    if not tests_dir.exists():
+        add("A9", "pytest 全绿", "PENDING", "tests/ 尚未建立")
+    elif not has_pytest:
+        add("A9", "pytest 全绿", "PENDING", "本作业未安装 pytest（由 CI 的 pytest job 覆盖）")
+    else:
+        p3 = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-q"],
+                            cwd=str(ROOT), capture_output=True, text=True,
+                            encoding="utf-8", errors="replace")
+        tail = [l for l in (p3.stdout or "").strip().splitlines() if l.strip()][-1:] or ["无输出"]
+        add("A9", "pytest 全绿", "PASS" if p3.returncode == 0 else "FAIL", tail[0])
+
+    b = bash_path()
+    if not b:
+        add("A7", "钩子依赖可用", "FAIL", "找不到 bash", "装 Git for Windows 或配 shellPath")
+    else:
+        ok = all(subprocess.run([b, "-n", str(HOOKS / f)], capture_output=True).returncode == 0
+                 for f in ("guard_bash.sh", "guard_paths.sh"))
+        has_jq = shutil.which("jq") is not None
+        add("A7", "钩子依赖可用", "PASS" if ok else "FAIL",
+            f"bash -n OK；jq {'有' if has_jq else '无 → 走 _tool_field.py 兜底'}")
+
+
+def _drill_profiles(cfg: dict) -> None:
     profiles = {p.get("name"): p for p in cfg.get("daemon", {}).get("agentProfiles", [])}
     legacy = [n for n in profiles if n in LEGACY]
     if legacy:
@@ -107,33 +153,6 @@ def drill_setup(cfg: dict) -> None:
     add("A6", "五处一致性审计", "PASS" if p.returncode == 0 else "FAIL",
         (p.stdout or "").strip().splitlines()[-1] if p.stdout else "无输出",
         "" if p.returncode == 0 else "看 check_org.py 输出逐项修")
-
-    # A8：产品红线——learning-service 只许标准库
-    p2 = subprocess.run([sys.executable, str(ROOT / "scripts" / "check_stdlib_only.py")],
-                        capture_output=True, text=True, encoding="utf-8", errors="replace")
-    add("A8", "learning-service 仅标准库", "PASS" if p2.returncode == 0 else "FAIL",
-        (p2.stdout or "").strip().splitlines()[-1] if p2.stdout else "无输出")
-
-    # A9：产品测试全绿
-    tests_dir = ROOT / "tests"
-    if tests_dir.exists():
-        p3 = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-q"],
-                            cwd=str(ROOT), capture_output=True, text=True,
-                            encoding="utf-8", errors="replace")
-        tail = [l for l in (p3.stdout or "").strip().splitlines() if l.strip()][-1:] or ["无输出"]
-        add("A9", "pytest 全绿", "PASS" if p3.returncode == 0 else "FAIL", tail[0])
-    else:
-        add("A9", "pytest 全绿", "PENDING", "tests/ 尚未建立（T-001 合并后自动生效）")
-
-    b = bash_path()
-    if not b:
-        add("A7", "钩子依赖可用", "FAIL", "找不到 bash", "装 Git for Windows 或配 shellPath")
-    else:
-        ok = all(subprocess.run([b, "-n", str(HOOKS / f)], capture_output=True).returncode == 0
-                 for f in ("guard_bash.sh", "guard_paths.sh"))
-        has_jq = shutil.which("jq") is not None
-        add("A7", "钩子依赖可用", "PASS" if ok else "FAIL",
-            f"bash -n OK；jq {'有' if has_jq else '无 → 走 _tool_field.py 兜底'}")
 
 
 # ---------------------------------------------------------------- B 门禁演练

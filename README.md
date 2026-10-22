@@ -49,6 +49,7 @@ python scripts/gate_drill.py                # 本机已过 20 项；平台 10 �
 | `scripts/gate_drill.py` | **门禁演练自动化**（PASS/FAIL/PENDING） |
 | `scripts/setup_github.py` | 一键配置分支保护与环境审批（默认 dry-run） |
 | `scripts/check_stdlib_only.py` | 产品红线：`learning-service/` 只许标准库 |
+| `scripts/post_review_check.py` | 把独立评审结论写成 `agent-review` 检查（否决 = 阻断合并，不需第二个账号） |
 | `.github/workflows/ci.yml` | 本仓库 CI：一致性 + 演练 + gitleaks + PR 体量 |
 | `docs/board/` | 任务看板、里程碑报告、**门禁演练记录** |
 | `CODEOWNERS` | 受保护路径与审批人 |

@@ -62,6 +62,44 @@ python scripts/setup_github.py --apply
 
 **机器账号一律不进审批人名单** —— 这是 `production` 唯一的意义。
 
+## 3.5 让评审拥有否决权：`agent-review` 必需检查（不需要第二个账号）
+
+**问题**：GitHub 不允许批准自己的 PR。单人仓库把 `required_approving_review_count` 设成 1 会**死锁** —— 你的 PR 永远合不进去。
+
+**解法**：把"评审结论"表达成**状态检查**而不是"人审批"。检查是红的，PR 就 `BLOCKED`，效果等同否决权，且与账号数量无关。
+
+```
+独立评审官（rev）给出结论
+        │
+        ├─ 通过 → python scripts/post_review_check.py --pr N --conclusion pass  --summary "..."
+        └─ 否决 → python scripts/post_review_check.py --pr N --conclusion block --summary "..."
+                          ↓
+              agent-review 检查 = success / failure
+                          ↓
+        设为必需检查 → failure 时 PR mergeStateStatus = BLOCKED
+```
+
+启用三步：
+
+1. 建一个 **fine-grained PAT**（Settings → Developer settings → Personal access tokens → Fine-grained tokens）：
+   - Repository access：只选 `keystone-ai-org`
+   - Permissions：**Checks: Read and write** + **Contents: Read-only** + **Pull requests: Read-only**
+   - 有效期设短（30 天），过期重建
+2. 把该 token 作为环境变量 `GH_TOKEN` **只交给独立评审官**（Paseo 里给 rev 的会话注入；开发岗位一律不给）。
+3. 先让 rev 在一个通过态 PR 上跑一次，确认 `agent-review` 检查出现；**然后**才把它加进必需检查：
+
+```powershell
+python scripts/setup_github.py --apply --checks org-consistency,pytest,pr-size,secrets,agent-review
+```
+
+> ⚠️ 顺序不能反：如果先加必需检查、却没有任何人提交这个检查，**所有 PR 都会被永久卡住**（状态永远 Expected）。
+>
+> ⚠️ 安全含义：**持有该 token 的 Agent 能伪造"评审通过"**。所以它只能给 rev，且 token 权限只到 checks —— 不给 contents:write，拿不到也推不了代码。
+
+### 仍然需要真人账号的那一项
+
+`CODEOWNERS 审批`（演练 3d）本质是"受保护路径必须由**另一双手**批"，这只能靠第二个协作者账号（机器用户）才能验。它是**可选加固**，不影响上门的检查门禁。
+
 ## 4 机器账号（脚本无权代做，必须你手工）
 
 | 岗位 | 需要 | 不需要 |

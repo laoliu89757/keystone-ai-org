@@ -17,9 +17,15 @@
     # 只预览不写入
     python scripts/post_review_check.py --pr 7 --conclusion pass --summary "..." --dry-run
 
-凭据（二选一）：
-    * 环境变量 GH_TOKEN / GITHUB_TOKEN，需 fine-grained PAT 勾选 Checks: write + Contents: read
+凭据（任选其一）：
+    * 环境变量 GH_TOKEN / GITHUB_TOKEN（classic token 需 repo 范围；fine-grained 需
+      Commit statuses: write + Contents: read）
     * 已登录的 gh CLI（gh auth login）
+
+为什么不用 check-runs API：GitHub 的 `POST /check-runs` 只接受 **GitHub App** 身份，
+用户 token / PAT 一律返回 "You must authenticate via a GitHub App."（实测 403）。
+所以这里走 **commit statuses API**（`POST /repos/{repo}/statuses/{sha}`），
+用户 token 即可写入，同样能被分支保护的「必需状态检查」识别。
 
 注意：**持有该 token 的 Agent 就能伪造通过结论**。所以这个 token 只能交给独立评审官（rev），
 开发岗位一律不给 —— 否则独立评审这条线形同虚设。
@@ -91,28 +97,26 @@ def main() -> int:
     body = args.summary if not args.details else f"{args.summary}\n\n---\n\n{args.details}"
 
     payload = {
-        "name": CHECK_NAME,
-        "head_sha": head_sha,
-        "status": "completed",
-        "conclusion": conclusion,
-        "output": {"title": title, "summary": body[:60000]},
+        "state": conclusion,               # success / failure
+        "context": CHECK_NAME,             # 必需检查里看到的名字
+        "description": f"{title}：{args.summary}"[:140],
     }
 
     print(f"仓库   : {repo}")
     print(f"PR     : #{number}  head={head_sha[:10]}")
-    print(f"检查   : {CHECK_NAME} → {conclusion}")
+    print(f"状态检查 : {CHECK_NAME} → {conclusion}")
     print(f"结论   : {args.summary}")
 
     if args.dry_run:
         print("\n[dry-run] 未提交")
         return 0
 
-    code, out = api(f"/repos/{repo}/check-runs", "POST", payload)
+    code, out = api(f"/repos/{repo}/statuses/{head_sha}", "POST", payload)
     if code != 0:
-        print("\n[x] 提交检查失败：", out)
-        print("    需要 fine-grained PAT 的 Checks: write 权限（classic token 需 repo 范围）")
+        print("\n[x] 提交状态失败：", out)
+        print("    需要 token 具备 repo 范围（classic）或 Commit statuses: write（fine-grained）")
         return 1
-    print("\n✓ 已提交检查（红灯会阻断合并，前提是 agent-review 已设为必需检查）")
+    print(f"\n✓ 已提交状态 {CHECK_NAME}={conclusion}（红灯会阻断合并，前提是已设为必需检查）")
     return 0
 
 

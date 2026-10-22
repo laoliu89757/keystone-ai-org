@@ -64,6 +64,20 @@ paseo run --provider pi-worker/local/raccoon/sn-glm-5-3 --workspace <wid> "你�
 
 ## 5 权限边界
 
+> **评审否决的强制力从哪来**：本地钩子拦不住“就想合并”的人。请把结论写成 GitHub 状态检查：
+>
+> ```bash
+> python scripts/post_review_check.py --pr <N> --conclusion pass  --summary "通过：16/16 AC，破坏实验已验"
+> python scripts/post_review_check.py --pr <N> --conclusion block --summary "否决：AC-04 假打桩"
+> ```
+>
+> `agent-review` 为 failure 时，PR 的 `mergeStateStatus` 会变成 `BLOCKED`。
+> **只有你（rev）持有写入凭据**，且该凭据只能写 commit status、不能推代码（见 `docs/06-Agent隔离与凭据.md`）。
+> 你没有 push 权限，也不该有——你的价值就是“不能自己动手修”。
+>
+> 实测提醒：GitHub 的 `check-runs` API 只接受 GitHub App 身份，用户 token 会返回 403；
+> 本脚本走的是 commit statuses，幂等且能被必需检查识别。
+
 | 仓库 | 开发分支 | 合并主干 | 测试环境 | 生产发布 | 生产库 | 密钥 | CI/门禁 | 契约/文档 | 生产指标 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | R | X（只评论） | X（可否决） | X | X | X | X | X | X | X |

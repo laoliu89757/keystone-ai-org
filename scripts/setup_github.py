@@ -140,7 +140,7 @@ def main() -> int:
                 "custom_branch_policies": False,
             }
         print(f"\n[2] 环境 PUT /repos/{repo}/environments/{name}")
-        print(json.dumps(payload or {"(无审批人，仅分支限制缺失)"}, ensure_ascii=False))
+        print(json.dumps(payload if payload else {"note": "无审批人，仅分支限制缺失"}, ensure_ascii=False))
         if args.apply:
             code, _, err = gh_json(
                 ["api", "--method", "PUT", f"/repos/{repo}/environments/{name}",

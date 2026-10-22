@@ -4,40 +4,40 @@
 > 落地到产品仓库时，把路径改成本项目真实目录。
 
 # 编制与流程本身：必须项目负责人批准
-/AGENTS.md                @project-owner
-/CLAUDE.md                @project-owner
-/CODEOWNERS               @project-owner
-/docs/roles/              @project-owner
-/docs/01-组织架构.md       @project-owner
-/docs/02-协作协议.md       @project-owner
-/docs/03-权限矩阵与强制手段.md @project-owner
-/.paseo/                  @project-owner
-/.claude/                 @project-owner
-/.pi/                     @project-owner
+/AGENTS.md                @laoliu89757
+/CLAUDE.md                @laoliu89757
+/CODEOWNERS               @laoliu89757
+/docs/roles/              @laoliu89757
+/docs/01-组织架构.md       @laoliu89757
+/docs/02-协作协议.md       @laoliu89757
+/docs/03-权限矩阵与强制手段.md @laoliu89757
+/.paseo/                  @laoliu89757
+/.claude/                 @laoliu89757
+/.pi/                     @laoliu89757
 
 # 流水线、门禁、基础设施
-/.github/                 @project-owner
-/infra/                   @project-owner
-/scripts/deploy*          @project-owner
-/scripts/rollback*        @project-owner
-/scripts/hooks/           @project-owner
+/.github/                 @laoliu89757
+/infra/                   @laoliu89757
+/scripts/deploy*          @laoliu89757
+/scripts/rollback*        @laoliu89757
+/scripts/hooks/           @laoliu89757
 
 # 测试门禁基准：防止通过"删测试 / 缩 testpaths / 放宽范围"绕过 pytest 门禁
-/pytest.ini               @project-owner
+/pytest.ini               @laoliu89757
 
 # 说明：/tests/ 本身不列入本文件——否则每个开发 PR 都要人批，T1 就退化成 T3。
 # 删改测试由独立评审官（rev）在 PR 里盯，平台侧靠 pytest 门禁与必需检查兜底。
 
 # 评测基线（门禁基准，评测官不能自批）
-/evals/baseline/          @project-owner
+/evals/baseline/          @laoliu89757
 
 # 架构决策记录
-/docs/adr/                @project-owner
+/docs/adr/                @laoliu89757
 
 # ---- 以下为产品代码接入后的高风险目录（按实际路径调整） ----
 # 权限、支付、权益
-# /backend/application/admin/controller/auth/        @project-owner
-# /backend/application/api/controller/pay/           @project-owner
-# /backend/application/common/library/entitlement/   @project-owner
+# /backend/application/admin/controller/auth/        @laoliu89757
+# /backend/application/api/controller/pay/           @laoliu89757
+# /backend/application/common/library/entitlement/   @laoliu89757
 # 掌握判定默认阈值与放行规则
-# /learning-service/engine/mastery_rules/            @project-owner
+# /learning-service/engine/mastery_rules/            @laoliu89757

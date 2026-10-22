@@ -60,8 +60,14 @@ def targets() -> list[Path]:
 
 
 def sha(path: Path) -> str:
+    """哈希前先把换行归一成 LF。
+
+    为什么：本机工作区可能是 CRLF，而仓库存储（.gitattributes）是 LF，CI checkout 也是 LF。
+    不归一的话本地建立的基线在 CI 必然失配（实测踩过）。纯换行变更本来就由 git 归一，
+    不属于需要告警的修改。
+    """
     h = hashlib.sha256()
-    h.update(path.read_bytes())
+    h.update(path.read_bytes().replace(b"\r\n", b"\n"))
     return h.hexdigest()
 
 

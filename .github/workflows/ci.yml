@@ -38,6 +38,10 @@ jobs:
           python -m pip install --disable-pip-version-check pyyaml
           python scripts/check_workflows.py
 
+      # 受保护文件完整性：任何未声明的修改都会变红（改动需同步更新 --baseline 并在 PR 说明理由）
+      - name: protected files unchanged
+        run: python scripts/harden_local.py --verify
+
       - name: hooks syntax
         run: |
           bash -n scripts/hooks/guard_bash.sh

@@ -103,6 +103,15 @@ def drill_setup(cfg: dict) -> None:
         tail = [l for l in (p3.stdout or "").strip().splitlines() if l.strip()][-1:] or ["无输出"]
         add("A9", "pytest 全绿", "PASS" if p3.returncode == 0 else "FAIL", tail[0])
 
+    # A11：受保护文件完整性（防误改留痕；本地层不是安全边界，见 docs/06）
+    p4 = subprocess.run([sys.executable, str(ROOT / "scripts" / "harden_local.py"), "--verify"],
+                        cwd=str(ROOT), capture_output=True, text=True,
+                        encoding="utf-8", errors="replace")
+    line4 = [l for l in (p4.stdout or "").strip().splitlines() if l.strip()]
+    add("A11", "受保护文件未被静默修改", "PASS" if p4.returncode == 0 else "FAIL",
+        (line4[0] if line4 else "无输出"),
+        "" if p4.returncode == 0 else "跑 python scripts/harden_local.py --baseline 并说明理由")
+
     b = bash_path()
     if not b:
         add("A7", "钩子依赖可用", "FAIL", "找不到 bash", "装 Git for Windows 或配 shellPath")

@@ -43,7 +43,7 @@ python scripts/setup_github.py --apply
 | 参数 | 值 | 为什么 |
 | --- | --- | --- |
 | Require a pull request | ✅ | 禁止直推 main |
-| Required approvals | 1 | 人是最终审批者 |
+| Required approvals | **0（暂）** | 单人仓库若设 1 会**死锁**（GitHub 不允许批准自己的 PR）。机器账号（`keystone-rev`）建好后改 `--approvals 1 --require-code-owners` |
 | Dismiss stale approvals | ✅ | 新提交后旧批准作废 |
 | Require review from Code Owners | ✅ | 受保护路径必须你批 |
 | Require status checks (strict) | ✅ | 必须绿 + 分支最新 |

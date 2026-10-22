@@ -1,0 +1,42 @@
+name: deploy
+
+# 占位工作流：验证 production 环境审批真的会"停住"。
+# 真实部署脚本（scripts/deploy.sh / migrate.sh / check_canary_metrics.sh）接入后替换 echo。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 要发布的提交或标签
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  staging:
+    name: staging
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: staging          # 无审批人，随 main 自动部署
+    steps:
+      - uses: actions/checkout@v4
+      - name: deploy staging (placeholder)
+        run: echo "would run: scripts/deploy.sh staging"
+
+  production:
+    name: production
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production        # 必需审批人 = 项目负责人；机器账号不在名单
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: backup + migrate + canary deploy (placeholder)
+        run: |
+          echo "would run: scripts/backup_db.sh production"
+          echo "would run: scripts/migrate.sh production up"
+          echo "would run: scripts/deploy.sh production --canary 5"

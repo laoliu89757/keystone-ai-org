@@ -56,6 +56,14 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true", help="真正写入（默认 dry-run）")
     ap.add_argument("--dry-run", action="store_true", help="显式声明只预览（默认行为）")
     ap.add_argument("--checks", default=",".join(REQUIRED_CHECKS))
+    ap.add_argument("--approvals", type=int, default=0,
+                    help="必需审批人数；0=不要求人工审批（单人仓库不会死锁），机器账号就绪后改 1")
+    ap.add_argument("--require-code-owners", dest="require_code_owners", action="store_true",
+                    help="要求 CODEOWNERS 批准（需 --approvals>=1）")
+    ap.add_argument("--enforce-admins", dest="enforce_admins", action="store_true", default=True,
+                    help="管理员同样受保护规则约束（默认开）")
+    ap.add_argument("--no-enforce-admins", dest="enforce_admins", action="store_false",
+                    help="允许管理员绕过（单人维护的逃生门）")
     args = ap.parse_args()
 
     if args.dry_run:
@@ -97,12 +105,16 @@ def main() -> int:
     # 3) 分支保护
     protection = {
         "required_status_checks": {"strict": True, "contexts": checks},
-        "enforce_admins": True,
-        "required_pull_request_reviews": {
-            "dismiss_stale_reviews": True,
-            "require_code_owner_reviews": True,
-            "required_approving_review_count": 1,
-        },
+        "enforce_admins": bool(args.enforce_admins),
+        "required_pull_request_reviews": (
+            {
+                "dismiss_stale_reviews": True,
+                "require_code_owner_reviews": bool(args.require_code_owners),
+                "required_approving_review_count": args.approvals,
+            }
+            if args.approvals > 0
+            else None
+        ),
         "restrictions": None,
         "required_conversation_resolution": True,
         "allow_force_pushes": False,

@@ -1,7 +1,7 @@
 name: ci
 
-# 本仓库是「编制与流程仓库」，CI 只校验编制一致性、门禁脚本行为与仓库卫生。
-# 产品仓库接管后，按 docs/04 §2.4 另加 backend / learning-service / frontend / contract / migrations / e2e 等 job。
+# 本仓库两层：编制一致性（org-consistency）+ 学习服务（pytest / stdlib-only）+ 仓库卫生。
+# 产品仓库接管后，另加 backend / frontend / contract / migrations / e2e（见 docs/04 §2.4）。
 
 on:
   pull_request:
@@ -37,6 +37,22 @@ jobs:
         run: |
           bash -n scripts/hooks/guard_bash.sh
           bash -n scripts/hooks/guard_paths.sh
+
+  pytest:
+    name: pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      # 红线：learning-service/ 只许标准库（INTENT-001 §3）
+      - name: stdlib-only gate
+        run: python scripts/check_stdlib_only.py
+      - name: install pytest
+        run: python -m pip install --disable-pip-version-check pytest
+      - name: run tests
+        run: python -m pytest tests/ -q
 
   pr-size:
     name: pr-size

@@ -108,6 +108,23 @@ def drill_setup(cfg: dict) -> None:
         (p.stdout or "").strip().splitlines()[-1] if p.stdout else "无输出",
         "" if p.returncode == 0 else "看 check_org.py 输出逐项修")
 
+    # A8：产品红线——learning-service 只许标准库
+    p2 = subprocess.run([sys.executable, str(ROOT / "scripts" / "check_stdlib_only.py")],
+                        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    add("A8", "learning-service 仅标准库", "PASS" if p2.returncode == 0 else "FAIL",
+        (p2.stdout or "").strip().splitlines()[-1] if p2.stdout else "无输出")
+
+    # A9：产品测试全绿
+    tests_dir = ROOT / "tests"
+    if tests_dir.exists():
+        p3 = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-q"],
+                            cwd=str(ROOT), capture_output=True, text=True,
+                            encoding="utf-8", errors="replace")
+        tail = [l for l in (p3.stdout or "").strip().splitlines() if l.strip()][-1:] or ["无输出"]
+        add("A9", "pytest 全绿", "PASS" if p3.returncode == 0 else "FAIL", tail[0])
+    else:
+        add("A9", "pytest 全绿", "PENDING", "tests/ 尚未建立（T-001 合并后自动生效）")
+
     b = bash_path()
     if not b:
         add("A7", "钩子依赖可用", "FAIL", "找不到 bash", "装 Git for Windows 或配 shellPath")

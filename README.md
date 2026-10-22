@@ -39,6 +39,7 @@ python scripts/gate_drill.py                # 本机已过 20 项；平台 10 �
 | `docs/02-协作协议.md` | 状态机、派单协议、回执协议、worktree 规则、评审循环、通信矩阵、熔断、仲裁 |
 | `docs/03-权限矩阵与强制手段.md` | R/W/A/H/X 矩阵、三层门禁、人工审核点 |
 | `docs/04-落地清单与演练.md` | 八步落地、平台配置清单、10 项门禁演练、日常节奏、移植步骤 |
+| `docs/05-GitHub-平台门禁配置.md` | **Phase C**：三步命令、必需检查、分支保护参数、机器账号、8 项平台演练 |
 | `docs/roles/` | **17 张角色卡**（每个岗位的详细设置方法与提示词） |
 | `templates/` | 任务单、回执、里程碑报告、PR 模板 |
 | `.paseo/config.patch.json` | 岗位 profile 与降权 provider 变体（可手工合并） |
@@ -46,6 +47,8 @@ python scripts/gate_drill.py                # 本机已过 20 项；平台 10 �
 | `scripts/hooks/` | `guard_bash.sh`、`guard_paths.sh` 本地钩子（无 jq 时用 `_tool_field.py` 兜底） |
 | `scripts/check_org.py` | 五处一致性审计（组织表 / 角色卡 / profile / 钩子 / 章程） |
 | `scripts/gate_drill.py` | **门禁演练自动化**（PASS/FAIL/PENDING） |
+| `scripts/setup_github.py` | 一键配置分支保护与环境审批（默认 dry-run） |
+| `scripts/check_stdlib_only.py` | 产品红线：`learning-service/` 只许标准库 |
 | `.github/workflows/ci.yml` | 本仓库 CI：一致性 + 演练 + gitleaks + PR 体量 |
 | `docs/board/` | 任务看板、里程碑报告、**门禁演练记录** |
 | `CODEOWNERS` | 受保护路径与审批人 |

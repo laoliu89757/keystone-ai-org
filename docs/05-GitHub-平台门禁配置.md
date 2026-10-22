@@ -79,7 +79,7 @@ python scripts/setup_github.py --apply
 | # | 动作 | 期望 |
 | --- | --- | --- |
 | 1 | 提一个含失败测试的 PR | `pytest` 红 → 不可合并 |
-| 2 | 提一个含假密钥的提交（`AKIAIOSFODNN7EXAMPLE`） | `secrets` 红 |
+| 2 | 提一个含假密钥的提交（`AKIA` + 16 位随机大写字母，**别用 AWS 文档里的 EXAMPLE 值**，gitleaks 默认放行它） | `secrets` 红 |
 | 3 | 直推 main / force push | 被拒绝（服务器端） |
 | 4 | 改 `.github/workflows/ci.yml` 的 PR | 要求 CODEOWNERS 批准（你） |
 | 5 | 用 `keystone-dev` 账号写 `agent-review` | 403 |

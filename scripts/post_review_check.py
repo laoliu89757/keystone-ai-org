@@ -77,16 +77,15 @@ def main() -> int:
 
     repo = args.repo
     if not repo:
-        code, _, err = api("/repos/{owner}/{repo}")
         code, out, err = sh(["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"])
         if code != 0:
             print("[x] 无法确定仓库：", err)
             return 1
         repo = out
 
-    code, pr, err = api(f"/repos/{repo}/pulls/{args.pr}")
+    code, pr = api(f"/repos/{repo}/pulls/{args.pr}")
     if code != 0:
-        print(f"[x] 取 PR #{args.pr} 失败：{err}")
+        print(f"[x] 取 PR #{args.pr} 失败：{pr}")
         return 1
     pr_data = json.loads(pr)
     head_sha = pr_data["head"]["sha"]

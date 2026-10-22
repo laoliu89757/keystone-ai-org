@@ -74,6 +74,11 @@ jobs:
   secrets:
     name: secrets
     runs-on: ubuntu-latest
+    # gitleaks-action 需要读提交并在 PR 上回评论；只给 contents:read 会报
+    # "Resource not accessible by integration"。这里按 job 单独提权，不放宽全局。
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:

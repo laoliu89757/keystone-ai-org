@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: deploy staging (placeholder)
-        run: echo "would run: scripts/deploy.sh staging"
+        run: echo "staging placeholder -> scripts/deploy.sh staging"
 
   production:
     name: production
@@ -37,6 +37,6 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
       - name: backup + migrate + canary deploy (placeholder)
         run: |
-          echo "would run: scripts/backup_db.sh production"
-          echo "would run: scripts/migrate.sh production up"
-          echo "would run: scripts/deploy.sh production --canary 5"
+          echo "backup  -> scripts/backup_db.sh production"
+          echo "migrate -> scripts/migrate.sh production up"
+          echo "deploy  -> scripts/deploy.sh production --canary 5"

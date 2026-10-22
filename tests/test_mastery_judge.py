@@ -329,32 +329,85 @@ def test_reasons_reference_rules():
     assert all(r.contribution is not None for r in result.reasons)
 
 
-def test_ac04_no_llm_no_side_effects():
-    # AC-04/05：对被禁资源打桩（触发即抛错），判定仍正常完成且结果不变。
-    # mastery 模块仅依赖标准库 math/re/collections/dataclasses，无 LLM/
-    # 网络/DB/时钟导入——若实现引入即说明判定依赖了被禁资源。
-    import builtins
+def test_ac04_no_llm_no_side_effects(monkeypatch):
+    """AC-04/05：真打桩版——对被禁资源的真实调用入口打桩（触发即抛错），
+    并在测试内自证"打桩后的入口现在调用必抛错"（不允许只 set 不验）；
+    打桩生效期间判定照常完成且结果不变。
+
+    mastery 模块 import 区仅依赖 math/re/__future__/collections.abc/
+    dataclasses（已核实）。两道防线：
+    - 静态扫描：import 期插入的 ``import time`` / ``time.time()`` 等在
+      导入期执行、打桩拦不到，靠模块命名空间扫描兜底（故 banned 含 time）；
+    - 真打桩：判定期间任何对 socket / 时钟的调用立即抛 AssertionError。
+    """
+    import datetime as _dt
+    import socket as _socket
     import sys
+    import time as _time
 
     import learning_service.mastery as mastery_mod
 
-    banned = ("socket", "http", "urllib.request", "requests", "sqlite3", "datetime")
+    # --- 0) 静态扫描（保留原测试的依赖检查，补 time：导入期插入靠它兜底）---
+    banned = ("socket", "http", "urllib.request", "requests", "sqlite3", "datetime", "time")
     for name in banned:
         assert name not in sys.modules or name not in mastery_mod.__dict__, (
             f"mastery 不应依赖 {name}"
         )
-    for attr in ("datetime", "time", "open", "socket"):
-        if hasattr(builtins, attr):
-            assert not any(
-                getattr(mastery_mod, attr, None) is getattr(builtins, attr, None)
-                for attr in (attr,)
-            )
 
+    # --- 1) 真打桩：对真实调用入口打桩，触发即抛错 ---
+    def _boom(what):
+        def _raise(*_args, **_kwargs):
+            raise AssertionError(f"side effect detected: {what}")
+
+        return _raise
+
+    # datetime.datetime 是 C 类型，直接 setattr 其 now 会 TypeError——
+    # 正确做法是替换 datetime 模块命名空间里的类（用子类保持 isinstance 语义）。
+    class _BoomDT(_dt.datetime):
+        @classmethod
+        def now(cls, *args, **kwargs):
+            raise AssertionError("side effect detected: datetime.datetime.now")
+
+        @classmethod
+        def utcnow(cls, *args, **kwargs):
+            raise AssertionError("side effect detected: datetime.datetime.utcnow")
+
+    monkeypatch.setattr(_socket, "socket", _boom("socket.socket"))
+    monkeypatch.setattr(_socket, "create_connection", _boom("socket.create_connection"))
+    monkeypatch.setattr(_time, "time", _boom("time.time"))
+    monkeypatch.setattr(_time, "monotonic", _boom("time.monotonic"))
+    monkeypatch.setattr(_dt, "datetime", _BoomDT)
+
+    # --- 2) 自证打桩有效：现在调用这些入口必抛错（不许只 set 不验）---
+    with pytest.raises(AssertionError, match="side effect detected: socket.socket"):
+        _socket.socket()
+    # 127.0.0.1 为数字 IP，getaddrinfo 走纯解析路径，绝不会真连网络——
+    # 若打桩失效这里才会出现真实连接行为。
+    with pytest.raises(
+        AssertionError, match="side effect detected: socket.create_connection"
+    ):
+        _socket.create_connection(("127.0.0.1", 80), timeout=0.01)
+    with pytest.raises(AssertionError, match="side effect detected: time.time"):
+        _time.time()
+    with pytest.raises(AssertionError, match="side effect detected: time.monotonic"):
+        _time.monotonic()
+    with pytest.raises(
+        AssertionError, match="side effect detected: datetime.datetime.now"
+    ):
+        _dt.datetime.now()
+    with pytest.raises(
+        AssertionError, match="side effect detected: datetime.datetime.utcnow"
+    ):
+        _dt.datetime.utcnow()
+
+    # --- 3) 打桩生效期间判定照常完成，结果不变（AC-04 原行为断言保留）---
     result = judge_mastery(_all_correct(10, 3), KNOWN_KP)
     again = judge_mastery(_all_correct(10, 3), KNOWN_KP)
 
     assert result == again
     assert result.mastery == 80.0
+
+    # --- 4) 默认值锁定（AC-05 原断言保留）---
     assert DEFAULT_CONFIG.pass_threshold == 80.0
     assert DEFAULT_CONFIG.min_questions == 10
     assert DEFAULT_CONFIG.streak_critical == 3

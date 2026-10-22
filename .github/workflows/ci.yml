@@ -35,18 +35,8 @@ jobs:
         run: python -c "import json;json.load(open('.paseo/config.patch.json',encoding='utf-8'));print('ok')"
       - name: workflow yaml is valid
         run: |
-          python - <<'PYEOF'
-          import glob, sys, yaml
-          bad = []
-          for f in sorted(glob.glob(".github/workflows/*.yml")):
-              try:
-                  yaml.safe_load(open(f, encoding="utf-8"))
-                  print("ok  ", f)
-              except Exception as e:
-                  bad.append((f, e))
-                  print("bad ", f, e)
-          sys.exit(1 if bad else 0)
-          PYEOF
+          python -m pip install --disable-pip-version-check pyyaml
+          python scripts/check_workflows.py
 
       - name: hooks syntax
         run: |

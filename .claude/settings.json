@@ -52,7 +52,11 @@
       "Bash(pytest --version)",
       "Bash(which:*)",
       "Bash(tree:*)",
-      "Bash(file:*)"
+      "Bash(file:*)",
+      "Bash(python -c:*)",
+      "Bash(python3 -c:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(python -m compileall:*)"
     ],
     "deny": [
       "Read(./.env)",

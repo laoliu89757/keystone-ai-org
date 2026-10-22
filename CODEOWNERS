@@ -22,6 +22,12 @@
 /scripts/rollback*        @project-owner
 /scripts/hooks/           @project-owner
 
+# 测试门禁基准：防止通过"删测试 / 缩 testpaths / 放宽范围"绕过 pytest 门禁
+/pytest.ini               @project-owner
+
+# 说明：/tests/ 本身不列入本文件——否则每个开发 PR 都要人批，T1 就退化成 T3。
+# 删改测试由独立评审官（rev）在 PR 里盯，平台侧靠 pytest 门禁与必需检查兜底。
+
 # 评测基线（门禁基准，评测官不能自批）
 /evals/baseline/          @project-owner
 
